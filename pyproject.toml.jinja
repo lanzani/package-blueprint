@@ -13,7 +13,7 @@ dependencies = []
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-{% if use_private_registry == 'yes' %}
+{% if use_private_registry == true %}
 [[tool.uv.index]]
 name = "{{ private_registry_name }}"
 url = "{{ private_registry_url }}"

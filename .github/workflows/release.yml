@@ -38,7 +38,7 @@ jobs:
 
   setup_and_build:
     name: Install uv and build wheel
-    needs: [setup_and_build, details]
+    needs: [details]
     runs-on: ubuntu-latest
 
     steps:
@@ -63,7 +63,7 @@ jobs:
 
   github_release:
     name: Create GitHub Release
-    needs: [details]
+    needs: [setup_and_build, details]
     runs-on: ubuntu-latest
     permissions:
       contents: write

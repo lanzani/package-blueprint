@@ -90,7 +90,7 @@ jobs:
 
 {% endraw %}
 
-{% if use_private_registry == 'yes' %}
+{% if use_private_registry == true %}
   private_pypi_publish:
     name: Publish python package to {{ private_registry_name }} registry
     needs: [ setup_and_build, details ]
