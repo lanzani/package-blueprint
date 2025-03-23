@@ -36,9 +36,34 @@ jobs:
             exit 1
           fi
 
+  setup_and_build:
+    name: Install uv and build wheel
+    needs: [ details ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+#      - name: Install the project
+#        run: uv sync --all-extras --dev
+
+#      - name: Run tests
+#          # For example, using `pytest`
+#          run: uv run pytest tests
+
+      - name: Build Wheel
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
   github_release:
     name: Create GitHub Release
-    needs: [ details ]
+    needs: [ setup_and_build, details ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -48,9 +73,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
       - name: Create GitHub Release
         id: create_release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --generate-notes
+
+{% if use_private_registry == 'Yes' %}
+  private_pypi_publish:
+    name: Publish python package to {{ private_registry_name }} registry
+    needs: [ setup_and_build, details ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: ./.github/actions/setup
+
+      - name: Publish python package
+        env:
+          UV_PUBLISH_USERNAME: ${{ secrets.MAGICPYPI_USERNAME }}
+          UV_PUBLISH_PASSWORD: ${{ secrets.MAGICPYPI_PASSWORD }}
+        run: uv publish --index {{ private_registry_name }}
+{% endif %}

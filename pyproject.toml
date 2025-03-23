@@ -1,20 +1,20 @@
 [project]
 name = "package-blueprint"
-version = "0.1.0"
+version = "0.1.2"
 description = "UV package starting template"
 readme = "README.md"
-authors = [
-    { name = "lanzani", email = "hello@federicolanzani.com" }
-]
 requires-python = ">=3.13"
 dependencies = []
+[[project.authors]]
+name = "lanzani"
+email = "hello@federicolanzani.com"
 
 [build-system]
-requires = ["hatchling"]
+requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = [
-    "pre-commit",
-    "ruff",
-]
+dev = [ "pre-commit", "ruff",]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/{{package_name}}"]

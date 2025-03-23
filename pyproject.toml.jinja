@@ -13,8 +13,10 @@ dependencies = []
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[dependency-groups]
-dev = [
-    "pre-commit",
-    "ruff",
-]
+{% if use_private_registry == 'Yes' %}
+[[tool.uv.index]]
+name = "{{ private_registry_name }}"
+url = "{{ private_registry_url }}"
+publish-url = "{{ private_registry_publish_url }}"
+explicit = true
+{% endif %}
