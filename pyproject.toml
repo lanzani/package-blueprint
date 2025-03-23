@@ -1,0 +1,14 @@
+[project]
+name = "package-blueprint"
+version = "0.1.0"
+description = "UV package starting template"
+readme = "README.md"
+authors = [
+    { name = "lanzani", email = "hello@federicolanzani.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

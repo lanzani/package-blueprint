@@ -1,0 +1,11 @@
+# questions
+package_name:
+  type: str
+  help: What is your package name? (use '_', not '-')
+
+use_private_pypi:
+  type: bool
+  help: Are you going to publish this package on a private package index?
+  choices:
+    - true
+    - false
