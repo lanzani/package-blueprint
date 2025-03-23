@@ -36,9 +36,34 @@ jobs:
             exit 1
           fi
 
+  setup_and_build:
+    name: Install uv and build wheel
+    needs: [setup_and_build, details]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      #      - name: Install the project
+      #        run: uv sync --all-extras --dev
+
+      #      - name: Run tests
+      #          # For example, using `pytest`
+      #          run: uv run pytest tests
+
+      - name: Build Wheel
+        run: uv build
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
   github_release:
     name: Create GitHub Release
-    needs: [ details ]
+    needs: [details]
     runs-on: ubuntu-latest
     permissions:
       contents: write

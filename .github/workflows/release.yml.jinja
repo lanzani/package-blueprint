@@ -90,7 +90,7 @@ jobs:
 
 {% endraw %}
 
-{% if use_private_registry == 'Yes' %}
+{% if use_private_registry == 'yes' %}
   private_pypi_publish:
     name: Publish python package to {{ private_registry_name }} registry
     needs: [ setup_and_build, details ]
@@ -111,10 +111,12 @@ jobs:
           path: dist/
 
       - uses: ./.github/actions/setup
-
+{% raw %}
       - name: Publish python package
         env:
           UV_PUBLISH_USERNAME: ${{ secrets.MAGICPYPI_USERNAME }}
           UV_PUBLISH_PASSWORD: ${{ secrets.MAGICPYPI_PASSWORD }}
+{% endraw %}
         run: uv publish --index {{ private_registry_name }}
+
 {% endif %}
