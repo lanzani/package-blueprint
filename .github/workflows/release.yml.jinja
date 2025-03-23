@@ -12,16 +12,16 @@ jobs:
   details:
     runs-on: ubuntu-latest
     outputs:
-      new_version: ${{ steps.release.outputs.new_version }}
-      suffix: ${{ steps.release.outputs.suffix }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
+      new_version: {% raw %}${{ steps.release.outputs.new_version }}{% endraw %}
+      suffix: {% raw %}${{ steps.release.outputs.suffix }}{% endraw %}
+      tag_name: {% raw %}${{ steps.release.outputs.tag_name }}{% endraw %}
     steps:
       - uses: actions/checkout@v4
 
       - name: Extract tag and Details
         id: release
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
+          if [ "{% raw %}${{ github.ref_type }}{% endraw %}" = "tag" ]; then
             TAG_NAME=${GITHUB_REF#refs/tags/}
             NEW_VERSION=$(echo $TAG_NAME | awk -F'-' '{print $1}')
             SUFFIX=$(echo $TAG_NAME | grep -oP '[a-z]+[0-9]+' || echo "")
@@ -82,9 +82,9 @@ jobs:
       - name: Create GitHub Release
         id: create_release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: {% raw %}${{ github.token }}{% endraw %}
         run: |
-          gh release create ${{ needs.details.outputs.tag_name }} dist/* --title ${{ needs.details.outputs.tag_name }} --generate-notes
+          gh release create {% raw %}${{ needs.details.outputs.tag_name }}{% endraw %} dist/* --title ${{ needs.details.outputs.tag_name }}{% endraw %} --generate-notes
 
 {% if use_private_registry == 'Yes' %}
   private_pypi_publish:
@@ -110,7 +110,7 @@ jobs:
 
       - name: Publish python package
         env:
-          UV_PUBLISH_USERNAME: ${{ secrets.MAGICPYPI_USERNAME }}
-          UV_PUBLISH_PASSWORD: ${{ secrets.MAGICPYPI_PASSWORD }}
+          UV_PUBLISH_USERNAME: {% raw %}${{ secrets.MAGICPYPI_USERNAME }}{% endraw %}
+          UV_PUBLISH_PASSWORD: {% raw %}${{ secrets.MAGICPYPI_PASSWORD }}{% endraw %}
         run: uv publish --index {{ private_registry_name }}
 {% endif %}

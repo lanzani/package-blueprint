@@ -24,3 +24,7 @@ private_registry_publish_url:
   type: str
   help: "private registry publish url: (used in tool.uv.index)"
   when: "{{ use_private_registry == 'Yes' }}"
+
+_exclude:
+  - ".git"
+  - ".github/workflows/release.yml"

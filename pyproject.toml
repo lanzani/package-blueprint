@@ -5,6 +5,7 @@ description = "UV package starting template"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
 [[project.authors]]
 name = "lanzani"
 email = "hello@federicolanzani.com"
