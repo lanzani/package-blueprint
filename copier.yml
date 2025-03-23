@@ -11,14 +11,14 @@ use_private_registry:
 private_registry_name:
   type: str
   help: Give a name to your private registry (used in tool.uv.index)
-  when: "{{ use_private_registry == 'yes' }}"
+  when: "{{ use_private_registry == true }}"
 
 private_registry_url:
   type: str
   help: private registry url (used in tool.uv.index)
-  when: "{{ use_private_registry == 'yes' }}"
+  when: "{{ use_private_registry == true }}"
 
 private_registry_publish_url:
   type: str
   help: private registry publish url (used in tool.uv.index)
-  when: "{{ use_private_registry == 'yes' }}"
+  when: "{{ use_private_registry == true }}"
