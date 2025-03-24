@@ -3,15 +3,18 @@
 # dependencies = [
 #     "toml",
 #     "typer",
-#     "rich"
+#     "rich",
+#     "genbadge[coverage]",
 # ]
 # ///
 
 import subprocess
+import sys
 from enum import Enum
 
 import toml
 import typer
+from genbadge import Badge
 from rich import print
 
 app = typer.Typer(help="Utility script for project management")
@@ -55,7 +58,48 @@ def bump(part: VersionPart = VersionPart.patch) -> None:
     with open("pyproject.toml", "w") as f:
         toml.dump(pyproject, f)
 
+    try:
+        subprocess.check_call(
+            ["uv", "run", "pre-commit", "run", "end-of-file-fixer", "--files", "pyproject.toml"]
+        )
+    except subprocess.CalledProcessError as e:
+        typer.echo("pre-commit fixed pyproject.toml")
+
     print(f"Version bumped to {major}.{minor}.{patch}")
+
+
+def run_tests():
+    try:
+        subprocess.check_call(["uv", "run", "pytest", "--cov=src"])
+
+    except subprocess.CalledProcessError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
+def generate_coverage_badge():
+    try:
+        subprocess.check_call(["uv", "run", "coverage", "xml"])
+        subprocess.check_call(
+            [
+                "genbadge",
+                "coverage",
+                "-i",
+                "coverage.xml",
+                "-o",
+                "reports/coverage-badge.svg",
+            ]
+        )
+
+    except subprocess.CalledProcessError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
+def generate_version_badge():
+    version = get_version()
+    b = Badge(left_txt="release", right_txt=f"v{version}", color="#0e7fc0")
+    b.write_to("reports/version-badge.svg", use_shields=False)
 
 
 @version_app.callback(invoke_without_command=True)
@@ -123,19 +167,20 @@ def release_command(
     # First run checks
     check_command()
 
-    # Get the old version for reporting
-    old_version = get_version()
+    # Run tests
+    run_tests()
+
+    generate_coverage_badge()
 
     # Bump the version
     bump(part)
-    try:
-        subprocess.check_call(
-            ["uv", "run", "pre-commit", "run", "end-of-file-fixer", "--files", "pyproject.toml"]
-        )
-    except subprocess.CalledProcessError as e:
-        typer.echo("pre-commit fixed pyproject.toml")
+
+    generate_version_badge()
 
     try:
+        # Get the old version for reporting
+        old_version = get_version()
+
         # Get the new version
         new_version = get_version()
 
@@ -164,6 +209,17 @@ def release_command(
         raise typer.Exit(code=1)
 
     print(f"[green]Successfully released version[/green] [bold green]{new_version}[/bold green]")
+
+
+@app.command(name="test")
+def run_test_command():
+    run_tests()
+
+
+@app.command(name="generate-badges")
+def generate_badges():
+    generate_coverage_badge()
+    generate_version_badge()
 
 
 if __name__ == "__main__":

@@ -14,7 +14,12 @@ requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [dependency-groups]
-dev = [ "pre-commit", "ruff",]
+dev = [
+ "pre-commit>=4.2.0",
+ "pytest>=8.3.5",
+ "pytest-cov>=6.0.0",
+ "ruff>=0.11.2",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = [ "src/{{package_name}}",]
