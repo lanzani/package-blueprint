@@ -160,6 +160,9 @@ def check_command() -> None:
 @app.command(name="release")
 def release_command(
     part: VersionPart = typer.Argument(VersionPart.patch, help="Which part of the version to bump"),
+    skip_tests: bool = typer.Option(
+        False, "--skip-tests", help="Skip running tests during release"
+    ),
 ) -> None:
     """
     Prepare a release: run checks and bump version
@@ -167,10 +170,13 @@ def release_command(
     # First run checks
     check_command()
 
-    # Run tests
-    run_tests()
-
-    generate_coverage_badge()
+    # Run tests if not skipped
+    if not skip_tests:
+        typer.echo("Running tests...")
+        run_tests()
+        generate_coverage_badge()
+    else:
+        typer.echo("Tests skipped as requested.")
 
     # Bump the version
     bump(part)
