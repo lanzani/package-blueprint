@@ -115,8 +115,8 @@ jobs:
 {% raw %}
       - name: Publish python package
         env:
-          UV_PUBLISH_USERNAME: ${{ secrets.PRIVATE_REGISTRY_USERNAME }}
-          UV_PUBLISH_PASSWORD: ${{ secrets.PRIVATE_REGISTRY_PASSWORD }}
+          UV_PUBLISH_USERNAME: ${{ secrets.UV_PUBLISH_USERNAME }}
+          UV_PUBLISH_PASSWORD: ${{ secrets.UV_PUBLISH_PASSWORD }}
 {% endraw %}
         run: uv publish --index {{ private_registry_name }}
 

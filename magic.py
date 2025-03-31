@@ -9,7 +9,6 @@
 # ///
 
 import subprocess
-import sys
 from enum import Enum
 
 import toml

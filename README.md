@@ -43,8 +43,8 @@ If you are not going to publish your package on a private index you can skip thi
 
 If you want to publish on a private index that needs authentication you have to declare two secrets in your project's action settings:
 
-- `PRIVATE_REGISTRY_USERNAME`
-- `PRIVATE_REGISTRY_PASSWORD`
+- `UV_PUBLISH_USERNAME`
+- `UV_PUBLISH_USERNAME`
 
 Once done, you are good to go.
 
@@ -53,5 +53,4 @@ Once done, you are good to go.
 ## TODO
 
 - [ ] Publish package on pypi
-- [ ] Command "do.py login" to store credentials
-- [ ] update env variable name for github actions
+- [ ] Command "magic.py login" to store credentials
