@@ -53,3 +53,5 @@ Once done, you are good to go.
 ## TODO
 
 - [ ] Publish package on pypi
+- [ ] Command "do.py login" to store credentials
+- [ ] update env variable name for github actions
