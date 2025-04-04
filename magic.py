@@ -78,6 +78,7 @@ def run_tests():
 
 def generate_coverage_badge():
     try:
+        subprocess.check_call(["uv", "run", "coverage", "html"])
         subprocess.check_call(["uv", "run", "coverage", "xml"])
         subprocess.check_call(
             [
