@@ -7,9 +7,12 @@
 #     "genbadge[coverage]",
 # ]
 # ///
-
+import os
+import platform
+import re
 import subprocess
 from enum import Enum
+from pathlib import Path
 
 import toml
 import typer
@@ -226,6 +229,110 @@ def run_test_command():
 def generate_badges():
     generate_coverage_badge()
     generate_version_badge()
+
+
+@app.command(name="login")
+def login_command(
+    use_default: bool = typer.Option(
+        False, "--default", "-d", help="Use 'default' as the package index name"
+    ),
+) -> None:
+    """
+    Login to a package index registry by setting environment variables
+
+    This will save the credentials as UV_INDEX_<INDEX_NAME>_USERNAME and UV_INDEX_<INDEX_NAME>_PASSWORD
+    environment variables. For the default PyPI registry, you can use the --default flag.
+    """
+    # Get package index name
+    if use_default:
+        package_index = "default"
+        print("[yellow]Using 'default' as the package index name[/yellow]")
+    else:
+        package_index = typer.prompt("Package index name (e.g., 'pypi', 'company-private')")
+
+    # Normalize the package index name to uppercase with underscores
+    normalized_index = re.sub(r"[^a-zA-Z0-9]", "_", package_index.upper())
+
+    # Construct environment variable names
+    username_var = f"UV_INDEX_{normalized_index}_USERNAME"
+    password_var = f"UV_INDEX_{normalized_index}_PASSWORD"
+
+    # Also set the default UV_PUBLISH variables if using default index
+    set_default_vars = use_default or package_index.lower() in ("pypi", "default")
+
+    # Prompt for credentials
+    username = typer.prompt("Username")
+    password = typer.prompt("Password", hide_input=True)
+
+    try:
+        # Set the environment variables based on the OS
+        system = platform.system()
+
+        if system == "Windows":
+            # For Windows, use setx to persist environment variables
+            subprocess.check_call(["setx", username_var, username])
+            subprocess.check_call(["setx", password_var, password])
+
+            # Set the default vars if needed
+            if set_default_vars:
+                subprocess.check_call(["setx", "UV_PUBLISH_USERNAME", username])
+                subprocess.check_call(["setx", "UV_PUBLISH_PASSWORD", password])
+
+            print(f"[green]Credentials saved as {username_var} and {password_var}[/green]")
+            if set_default_vars:
+                print("[green]Also saved as UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD[/green]")
+            print("Note: You may need to restart your terminal for the changes to take effect.")
+
+        else:  # Linux, macOS, etc.
+            # For Unix-like systems, add to .bashrc, .zshrc, or profile files
+            home = Path.home()
+
+            # Determine which shell configuration file to use
+            shell = os.environ.get("SHELL", "")
+
+            if "zsh" in shell:
+                config_file = home / ".zshrc"
+            else:
+                # Default to .bashrc
+                config_file = home / ".bashrc"
+
+            # Check if file exists, otherwise use .profile
+            if not config_file.exists():
+                config_file = home / ".profile"
+
+            # Backup the file first
+            backup_file = config_file.with_suffix(config_file.suffix + ".bak")
+            try:
+                subprocess.check_call(["cp", str(config_file), str(backup_file)])
+                print(f"[yellow]Backup created at {backup_file}[/yellow]")
+            except subprocess.CalledProcessError:
+                print("[yellow]Warning: Could not create backup file.[/yellow]")
+
+            # Write the environment variables to the file
+            with open(config_file, "a") as f:
+                f.write(f"\n# UV publishing credentials for {package_index}\n")
+                f.write(f"export {username_var}='{username}'\n")
+                f.write(f"export {password_var}='{password}'\n")
+
+                # Add the default vars if needed
+                if set_default_vars:
+                    f.write("\n# Default UV publishing credentials\n")
+                    f.write(f"export UV_PUBLISH_USERNAME='{username}'\n")
+                    f.write(f"export UV_PUBLISH_PASSWORD='{password}'\n")
+
+            print(
+                f"[green]Credentials saved to {config_file} as {username_var} and {password_var}[/green]"
+            )
+            if set_default_vars:
+                print("[green]Also saved as UV_PUBLISH_USERNAME and UV_PUBLISH_PASSWORD[/green]")
+            print(f"Run 'source {config_file}' to apply changes to current terminal session.")
+
+    except subprocess.CalledProcessError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except Exception as e:
+        typer.echo(f"Unexpected error: {e}", err=True)
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":
