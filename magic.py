@@ -39,7 +39,7 @@ def get_version() -> str:
 
 def bump(part: VersionPart = VersionPart.patch) -> None:
     """Bump the version number"""
-    with open("pyproject.toml", "r", encoding="utf-8") as f:
+    with open("pyproject.toml", "w", encoding="utf-8") as f:
         pyproject = toml.load(f)
 
     version = pyproject["project"]["version"]
