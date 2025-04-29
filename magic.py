@@ -32,7 +32,7 @@ class VersionPart(str, Enum):
 
 def get_version() -> str:
     """Get the current version from pyproject.toml"""
-    with open("pyproject.toml", "r") as f:
+    with open("pyproject.toml", "r", encoding="utf-8") as f:
         pyproject = toml.load(f)
     return pyproject["project"]["version"]
 
