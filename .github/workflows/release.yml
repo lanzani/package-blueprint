@@ -59,29 +59,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create ${{ needs.details.outputs.tag_name }} dist/*.whl --title ${{ needs.details.outputs.tag_name }} --generate-notes
-
-  private_pypi_publish:
-    name: Publish python package to magicvision registry
-    needs: [ details ]
-    runs-on: ubuntu-latest
-    environment:
-      name: production
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup
-
-      - name: Build Wheel
-        run: uv build --wheel
-
-      - name: Publish python package
-        env:
-          UV_PUBLISH_USERNAME: ${{ secrets.UV_PUBLISH_USERNAME }}
-          UV_PUBLISH_PASSWORD: ${{ secrets.UV_PUBLISH_PASSWORD }}
-        run: uv publish --index magicvision
