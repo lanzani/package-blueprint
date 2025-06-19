@@ -37,34 +37,9 @@ jobs:
             exit 1
           fi
 
-  setup_and_build:
-    name: Install uv and build wheel
-    needs: [ details ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-
-#      - name: Install the project
-#        run: uv sync --all-extras --dev
-
-#      - name: Run tests
-#          # For example, using `pytest`
-#          run: uv run pytest tests
-
-      - name: Build Wheel
-        run: uv build --wheel
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
   github_release:
-    name: Create GitHub Release
-    needs: [ setup_and_build, details ]
+    name: Build and Create GitHub Release
+    needs: [ details ]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -74,11 +49,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
+      - uses: ./.github/actions/setup
+
+      - name: Build Wheel
+        run: uv build --wheel
 
       - name: Create GitHub Release
         id: create_release
@@ -92,7 +66,7 @@ jobs:
 {% if use_private_registry == true %}
   private_pypi_publish:
     name: Publish python package to {{ private_registry_name }} registry
-    needs: [ setup_and_build, details ]
+    needs: [ details ]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -105,13 +79,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
       - uses: ./.github/actions/setup
+
+      - name: Build Wheel
+        run: uv build --wheel
 {% raw %}
       - name: Publish python package
         env:
